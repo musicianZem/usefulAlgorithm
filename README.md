@@ -1,5 +1,5 @@
 # usefulAlgorithm
 
-일하면서 필요했던 특정 알고리즘들을 적어두려고 합니다..
+Describe some things that was useful.  
+algorithm, setting, strategy, etc.  
 
-온라인 코드경진에서도 쉽게 다룰만큼 쉬운 문제들입니다.
