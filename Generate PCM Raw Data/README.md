@@ -2,4 +2,4 @@
 
 NO Header, just raw-data.
 
-control Frequency & Volume with value A, B at `A * sin(Bx)` 
+control Frequency & Volume with value A, B at `A*sin(Bx)` 
