@@ -2,36 +2,40 @@
 #include <math.h>
 #include <stdio.h>
 
-int hz_list[12] =
-{
-    500,
-    1000,
-    2000,
-    3000,
-    4000,
-    5000,
-    6000,
-    7000,
-    8000,
-    10000,
-    15000,
-    20000
+using namespace std;
+
+enum {
+    HZ_500 =   500,
+    HZ_1K  =  1000,
+    HZ_2K  =  2000,
+    HZ_3K  =  3000,
+    HZ_4K  =  4000,
+    HZ_5K  =  5000,
+    HZ_6K  =  6000,
+    HZ_7K  =  7000,
+    HZ_8K  =  8000,
+    HZ_10K = 10000,
+    HZ_15K = 15000,
+    HZ_20K = 20000,
 };
 
-using namespace std;
+const char* outputFileName = "test.pcm"; // output file(raw-data)
+const int   SAMPLE_RATE    =      16000; // Hz
+const int    MAX_VOLUME    =     0x7FFF; // signed 16 bit
+const int   PLAY_TIME_S    =          3; // seconds
+
 int main() {
-    FILE *fout = fopen("test.pcm", "w");
 
-    int SAMPLE_RATE = 44100;
+    FILE *fout = fopen(outputFileName, "w");
 
-    for(int testCount = 0; testCount < 12; testCount++) {
-        for(long i=0; i<SAMPLE_RATE/2; i++) {
-            // 16bit MAX 0x8000, times UNDER 1.0
-            int sinus = (int)(0.8 * 0x8000 * sin (2 * M_PI * hz_list[testCount] * i / SAMPLE_RATE));
+    for(int pt = 0; pt < SAMPLE_RATE * PLAY_TIME_S; pt++) {
+        double volume = MAX_VOLUME * 0.8;
+        double sample = 2.0 * M_PI * HZ_5K * pt / SAMPLE_RATE;
 
-            fprintf(fout, "%c", sinus & 0xFF);
-            fprintf(fout, "%c", (sinus >> 8) & 0xFF);
-        }
+        int musicValue = volume * sin (sample); // Asin(B) || A : volume, B : frequency
+
+        fprintf(fout, "%c", musicValue & 0xFF);
+        fprintf(fout, "%c", (musicValue >> 8) & 0xFF);
     }
 
     fclose(fout);
