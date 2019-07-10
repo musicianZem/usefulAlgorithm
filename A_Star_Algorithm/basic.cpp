@@ -18,7 +18,6 @@ class Cell {
         int i, j;
         int currentDist  = 0;
         int expectedDist = 0;
-        Cell* parent = nullptr;
 
         const double getExpectedDist() const {
             return currentDist + expectedDist;
@@ -32,15 +31,15 @@ class Cell {
 };
 
 struct CompareCellByDist {
-    bool operator() (const Cell* c1, const Cell* c2) {
-        return c1->getExpectedDist() < c2->getExpectedDist();
+    bool operator() (const Cell& c1, const Cell& c2) {
+        return c1.getExpectedDist() < c2.getExpectedDist();
     }
 };
 
 struct CompareCellByIndex {
-    bool operator() (const Cell* c1, const Cell* c2) {
-        if( c1->i != c2->i ) return c1->i < c2->i;
-        return c1->j < c2->j;
+    bool operator() (const Cell& c1, const Cell& c2) {
+        if( c1.i != c2.i ) return c1.i < c2.i;
+        return c1.j < c2.j;
     }
 };
 
@@ -52,35 +51,33 @@ void astar(int startI, int startJ, int endI, int endJ) {
         { 0,  1}
     };
 
-    Cell *firstCell = new Cell( startI, startJ );
-    firstCell->calculateExpectedDist(endI, endJ);
+    Cell firstCell( startI, startJ );
+    firstCell.calculateExpectedDist(endI, endJ);
 
-    std::set<Cell *, CompareCellByDist  > openList;
-    std::set<Cell *, CompareCellByIndex > closedList;
+    std::set<Cell, CompareCellByDist  > openList;
+    std::set<Cell, CompareCellByIndex > closedList;
 
     openList.insert( firstCell );
 
-    Cell *nearestCell = nullptr;
     while( !openList.empty() ) {
-        nearestCell = *openList.begin();
+        Cell nearestCell = *openList.begin();
         openList.erase(openList.begin());
         closedList.insert( nearestCell );
 
-        if( nearestCell->i == endI && nearestCell->j == endJ ) {
+        if( nearestCell.i == endI && nearestCell.j == endJ ) {
             break;
         }
 
         for(int p = 0; p < 4; p++) {
-            int i = nearestCell->i + nextPosition[p][0];
-            int j = nearestCell->j + nextPosition[p][1];
+            int i = nearestCell.i + nextPosition[p][0];
+            int j = nearestCell.j + nextPosition[p][1];
 
             if( !isOutofBound(i, j) ) {
                 if( mapState[i][j] == OBSTACLE ) continue;
 
-                Cell *nextCell = new Cell( i, j );
-                nextCell->currentDist = nearestCell->currentDist + 1;
-                nextCell->parent = nearestCell;
-                nextCell->calculateExpectedDist(endI, endJ);
+                Cell nextCell( i, j );
+                nextCell.currentDist = nearestCell.currentDist + 1;
+                nextCell.calculateExpectedDist(endI, endJ);
 
                 if( closedList.find( nextCell ) == closedList.end() ) {
                     openList.insert( nextCell );
@@ -88,9 +85,7 @@ void astar(int startI, int startJ, int endI, int endJ) {
             
             }
         }
-        // free nearestCell
     }
-    // free memory
 }
 
 int main() {
