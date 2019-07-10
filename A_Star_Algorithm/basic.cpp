@@ -43,7 +43,7 @@ struct CompareCellByIndex {
     }
 };
 
-void astar(int startI, int startJ, int endI, int endJ) {
+int astar(int startI, int startJ, int endI, int endJ) {
     const int nextPosition[4][2] = {
         {-1,  0},
         { 1,  0},
@@ -65,6 +65,7 @@ void astar(int startI, int startJ, int endI, int endJ) {
         closedList.insert( nearestCell );
 
         if( nearestCell.i == endI && nearestCell.j == endJ ) {
+            return nearestCell.currentDist;
             break;
         }
 
@@ -86,8 +87,10 @@ void astar(int startI, int startJ, int endI, int endJ) {
             }
         }
     }
+    return -1;
 }
 
 int main() {
-    astar(1, 1, 3, 3);
+    std::cout << "(1, 1) -> (3, 3) dist = ";
+    std::cout << astar(1, 1, 3, 3) << std::endl;
 }
