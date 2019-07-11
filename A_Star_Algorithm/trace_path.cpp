@@ -58,17 +58,17 @@ vector<pair<int, int>> astar() {
     Cell firstCell( fromI, fromJ );
     firstCell.GScore = 0;
     firstCell.pi = fromI; firstCell.pj = fromJ;
-    std::set<Cell, SetComparer> C;
-    C.insert( firstCell );
+    std::set<Cell, SetComparer> closedSet;
+    closedSet.insert( firstCell );
     std::priority_queue<Cell> queueO;
-    std::set<Cell, SetComparer> setO; 
-    setO.insert(firstCell);
+    std::set<Cell, SetComparer> openSet; 
+    openSet.insert(firstCell);
     queueO.push(firstCell);
 
     while(!queueO.empty()) {
         Cell beforeCell = queueO.top();
         queueO.pop();
-        C.insert(beforeCell);
+        closedSet.insert(beforeCell);
         if(beforeCell.i == goalI && beforeCell.j == goalJ) {
             break;
         }
@@ -82,10 +82,10 @@ vector<pair<int, int>> astar() {
                 nextCell.GScore = beforeCell.GScore + nextPosition[pos][2];
                 nextCell.pi = beforeCell.i;
                 nextCell.pj = beforeCell.j; 
-                if(C.find(nextCell) == C.end()) {
-                    auto iter = setO.find(nextCell);
+                if(closedSet.find(nextCell) == closedSet.end()) {
+                    auto iter = openSet.find(nextCell);
                     obstacle[i][j] = -2;
-                    if(iter != setO.end()) {
+                    if(iter != openSet.end()) {
                         if(iter->getF() > nextCell.getF()) {
                             iter->pi = beforeCell.i;
                             iter->pi = beforeCell.j;
@@ -93,7 +93,7 @@ vector<pair<int, int>> astar() {
                         }
                     }
                     else {
-                        setO.insert(nextCell); 
+                        openSet.insert(nextCell); 
                         queueO.push(nextCell); 
                     }
                 }
@@ -101,17 +101,15 @@ vector<pair<int, int>> astar() {
         } 
     }
 
-    auto iter = C.find(Cell(goalI, goalJ));
+    auto iter = closedSet.find(Cell(goalI, goalJ));
     obstacle[goalI][goalJ] = 0;
 
     vector<pair<int, int>> result;
-    result.push_back( make_pair(goalI, goalJ) );
-
-    if(iter != C.end()) {
+    if(iter != closedSet.end()) {
         int traceI = goalI, traceJ = goalJ;
         while( traceI != fromI || traceJ != fromJ ) {
             result.push_back( make_pair(traceI, traceJ) );
-            auto toFindParent = C.find(Cell(traceI, traceJ));
+            auto toFindParent = closedSet.find(Cell(traceI, traceJ));
             traceI = toFindParent->pi; traceJ = toFindParent->pj;
         }
         result.push_back( make_pair(fromI, fromJ) );
