@@ -5,9 +5,14 @@
 #include <algorithm>
 using namespace std;
 
-int obstacle[160][90];
-int fromI = 0, fromJ = 0, goalI = 15, goalJ = 8;
-bool hasPath = true;
+enum {
+    EMPTY    = 0,
+    OBSTACLE = 1
+};
+
+int mapState[160][90];
+int fromI = 1, fromJ = 1, goalI = 3, goalJ = 3;
+
 bool isOutofBound(int i, int j) {
     return i < 0 || i >= 160 || j < 0 || j >= 90;
 }
@@ -38,73 +43,71 @@ struct SetComparer {
     }
 };
 
-
-vector<pair<int, int>> astar();
-
-int main() {
-    vector< pair<int, int> > pv = astar();
-    for(vector< pair<int, int> >::reverse_iterator rit = pv.rbegin(); rit != pv.rend(); rit++) {
-        cout << rit->first << " " << rit->second << "\n";
-    }
-}
-
 vector<pair<int, int>> astar() {
 
+    vector<pair<int, int>> result;
+    if( mapState[fromI][fromJ] == OBSTACLE || mapState[goalI][goalJ] == OBSTACLE )
+        return result;
+
     const int nextPosition[8][3] = {
-        {-1, -1, 3}, {-1,  1, 3}, { 1, -1, 3}, { 1,  1, 3},
-        {-1,  0, 2}, { 1,  0, 2}, { 0, -1, 2}, { 0,  1, 2}
+        {-1, -1, 14}, {-1,  1, 14}, { 1, -1, 14}, { 1,  1, 14}, // unused
+        {-1,  0, 10}, { 1,  0, 10}, { 0, -1, 10}, { 0,  1, 10}  // used
     };
+
+    std::set<Cell, SetComparer> closedSet; // already used set
+    std::priority_queue<Cell> openQueue;      // best first
 
     Cell firstCell( fromI, fromJ );
     firstCell.GScore = 0;
     firstCell.pi = fromI; firstCell.pj = fromJ;
-    std::set<Cell, SetComparer> closedSet;
-    closedSet.insert( firstCell );
-    std::priority_queue<Cell> queueO;
-    std::set<Cell, SetComparer> openSet; 
-    openSet.insert(firstCell);
-    queueO.push(firstCell);
 
-    while(!queueO.empty()) {
-        Cell beforeCell = queueO.top();
-        queueO.pop();
+    closedSet.insert(firstCell);
+    openQueue.push(firstCell);
+
+    while(!openQueue.empty()) {
+        // open pop -> closed push
+        Cell beforeCell = openQueue.top();
+        openQueue.pop();
         closedSet.insert(beforeCell);
+
+        // find goal -> stop finding
         if(beforeCell.i == goalI && beforeCell.j == goalJ) {
             break;
         }
+
+        // left, right, up, down check
         for(int pos=4; pos<8; pos++) {
             int i = beforeCell.i + nextPosition[pos][0];
             int j = beforeCell.j + nextPosition[pos][1];
+
             if( !isOutofBound(i, j) ) {
-                if( obstacle[i][j] == 1 ) continue;
+                if( mapState[i][j] == OBSTACLE ) continue;
+
+                // set nextCell values | parent : beforeCell
                 Cell nextCell;
                 nextCell.i = i; nextCell.j = j;
                 nextCell.GScore = beforeCell.GScore + nextPosition[pos][2];
                 nextCell.pi = beforeCell.i;
                 nextCell.pj = beforeCell.j; 
-                if(closedSet.find(nextCell) == closedSet.end()) {
-                    auto iter = openSet.find(nextCell);
-                    obstacle[i][j] = -2;
-                    if(iter != openSet.end()) {
-                        if(iter->getF() > nextCell.getF()) {
-                            iter->pi = beforeCell.i;
-                            iter->pi = beforeCell.j;
-                            iter->GScore = beforeCell.GScore + nextPosition[pos][2]; 
-                        }
+
+                set<Cell>::iterator iter = closedSet.find( nextCell );
+                if(iter != closedSet.end()) {
+                    // if visit cell is Used, maintain lower cost Cell
+                    if(iter->getF() > nextCell.getF()) {
+                        closedSet.erase(iter);
+                        closedSet.insert( nextCell );
+                        openQueue.push(nextCell);
                     }
-                    else {
-                        openSet.insert(nextCell); 
-                        queueO.push(nextCell); 
-                    }
+                } else {
+                    openQueue.push(nextCell); 
                 }
             }
         } 
     }
 
+    // make path
     auto iter = closedSet.find(Cell(goalI, goalJ));
-    obstacle[goalI][goalJ] = 0;
 
-    vector<pair<int, int>> result;
     if(iter != closedSet.end()) {
         int traceI = goalI, traceJ = goalJ;
         while( traceI != fromI || traceJ != fromJ ) {
@@ -116,4 +119,25 @@ vector<pair<int, int>> astar() {
     } 
     return result;
 }
+
+int main() {
+    /*
+     *  -- Map Example --
+     * |  0  0  0  0  0  |
+     * |  0  S  1  0  0  |
+     * |  0  1  1  1  0  |
+     * |  0  0  1  E  0  |
+     * |  0  0  0  0  0  |
+     *  -----------------
+     */
+    mapState[1][2] = mapState[3][2] = OBSTACLE;
+    mapState[2][1] = mapState[2][2] = OBSTACLE;
+    mapState[2][2]                  = OBSTACLE;
+
+    vector<pair<int, int>> pv = astar();
+    for(vector<pair<int, int>>::reverse_iterator rit = pv.rbegin(); rit != pv.rend(); rit++) {
+        cout << rit->first << " " << rit->second << "\n";
+    }
+}
+
 
