@@ -3,19 +3,17 @@
 #include <vector>
 #include <set>
 #include <algorithm>
-using namespace std;
 
 enum {
     EMPTY    = 0,
     OBSTACLE = 1
 };
 
+int WIDTH = 90;
+int HEIGHT= 160;
 int mapState[160][90];
-int fromI = 1, fromJ = 1, goalI = 3, goalJ = 3;
-
-bool isOutofBound(int i, int j) {
-    return i < 0 || i >= 160 || j < 0 || j >= 90;
-}
+std::pair<int, int> destination;
+std::pair<int, int> curPosition;
 
 class Cell {
     public :
@@ -24,15 +22,26 @@ class Cell {
         mutable int GScore;
         mutable int pi, pj;
 
-        Cell(int i = 0, int j = 0) : i(i), j(j) {} 
+        static int goalI, goalJ;
+
+        Cell(int i = 0, int j = 0) : i(i), j(j) {
+        } 
+
         int getH() const {
             return 1 * (abs(goalI - i) + abs(goalJ - j));
         } 
+
         int getF() const {
             return getH() + GScore;
         }
+
         bool operator<(const Cell& h) const {
             return !(getF() < h.getF());
+        }
+
+        void static setGoalIdx(int i, int j) {
+            goalI = i;
+            goalJ = j;
         }
 }; 
 
@@ -43,11 +52,21 @@ struct SetComparer {
     }
 };
 
-vector<pair<int, int>> astar() {
+std::vector<std::pair<int, int>> aStarPath;
+int Cell::goalI = 0;
+int Cell::goalJ = 0;
 
-    vector<pair<int, int>> result;
+void astar() {
+    if( !aStarPath.empty() ) return;
+    int fromI = curPosition.first ;
+    int fromJ = curPosition.second;
+    int goalI = destination.first ;
+    int goalJ = destination.second;
+
     if( mapState[fromI][fromJ] == OBSTACLE || mapState[goalI][goalJ] == OBSTACLE )
-        return result;
+        return;
+
+    Cell::setGoalIdx(goalI, goalJ);
 
     const int nextPosition[8][3] = {
         {-1, -1, 14}, {-1,  1, 14}, { 1, -1, 14}, { 1,  1, 14}, // unused
@@ -80,7 +99,7 @@ vector<pair<int, int>> astar() {
             int i = beforeCell.i + nextPosition[pos][0];
             int j = beforeCell.j + nextPosition[pos][1];
 
-            if( !isOutofBound(i, j) ) {
+            if( i>=0&&j>=0&&i<HEIGHT&&j<WIDTH ) {
                 if( mapState[i][j] == OBSTACLE ) continue;
 
                 // set nextCell values | parent : beforeCell
@@ -90,7 +109,7 @@ vector<pair<int, int>> astar() {
                 nextCell.pi = beforeCell.i;
                 nextCell.pj = beforeCell.j; 
 
-                set<Cell>::iterator iter = closedSet.find( nextCell );
+                std::set<Cell>::iterator iter = closedSet.find( nextCell );
                 if(iter != closedSet.end()) {
                     // if visit cell is Used, maintain lower cost Cell
                     if(iter->getF() > nextCell.getF()) {
@@ -111,13 +130,16 @@ vector<pair<int, int>> astar() {
     if(iter != closedSet.end()) {
         int traceI = goalI, traceJ = goalJ;
         while( traceI != fromI || traceJ != fromJ ) {
-            result.push_back( make_pair(traceI, traceJ) );
+            aStarPath.push_back( std::make_pair(traceI, traceJ) );
             auto toFindParent = closedSet.find(Cell(traceI, traceJ));
             traceI = toFindParent->pi; traceJ = toFindParent->pj;
         }
-        result.push_back( make_pair(fromI, fromJ) );
+        aStarPath.push_back( std::make_pair(fromI, fromJ) );
     } 
-    return result;
+
+    for(std::vector<std::pair<int, int>>::reverse_iterator rit = aStarPath.rbegin(); rit != aStarPath.rend(); rit++) {
+        std::cout << rit->first << " " << rit->second << "\n";
+    }
 }
 
 int main() {
@@ -130,14 +152,16 @@ int main() {
      * |  0  0  0  0  0  |
      *  -----------------
      */
+    curPosition.first = 1;
+    curPosition.second= 1;
+    destination.first = 3;
+    destination.second= 3;
     mapState[1][2] = mapState[3][2] = OBSTACLE;
     mapState[2][1] = mapState[2][2] = OBSTACLE;
     mapState[2][2]                  = OBSTACLE;
 
-    vector<pair<int, int>> pv = astar();
-    for(vector<pair<int, int>>::reverse_iterator rit = pv.rbegin(); rit != pv.rend(); rit++) {
-        cout << rit->first << " " << rit->second << "\n";
-    }
+    astar();
+    std::cout << aStarPath.size() << std::endl;
 }
 
 
