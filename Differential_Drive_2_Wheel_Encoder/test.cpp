@@ -26,13 +26,69 @@ int main() {
 
         if( l == r ) {
             // 구현 필요
-            cout << "두 바퀴의 값이 같을 경우 처리는 아직 미완성입니다." << endl;
+            
+            // 실제 움직인 호의 길이 계산
+            float moveDist = l * ROBOT_MOVE_PER_TICK;
+
+            lx += moveDist * cosf(theta + (M_PI/2.f));
+            ly += moveDist * sinf(theta + (M_PI/2.f));
+            rx += moveDist * cosf(theta + (M_PI/2.f));
+            ry += moveDist * sinf(theta + (M_PI/2.f));
+
+            cout << lx << " " << ly << "       " << rx << " " << ry << endl;
             continue;
         }
 
+        // 내분점 공식 이용.
         if( l*r < 0 ) {
-            // 내분점 공식을 이용해 구할 예정.
-            cout << "각 바퀴가 서로 다른 방향으로 가는 경우 처리는 아직 미완성입니다." << endl;
+
+            int absl = abs(l);
+            int absr = abs(r);
+
+            // 실제 움직인 호의 길이 계산
+            float moveL = absl * ROBOT_MOVE_PER_TICK;
+            float moveR = absr * ROBOT_MOVE_PER_TICK;
+
+            // 두 바퀴가 그린 호는 같은 중점 (ox, oy)를 원점으로 한다.
+            // 이를 내분점으로 구한다.
+            float ox = (moveL*rx + moveR*lx) / (moveL + moveR);
+            float oy = (moveL*ry + moveR*ly) / (moveL + moveR);
+
+            // 원점에서 각 바퀴까지의 거리를 계산한다.
+            float lx_dist = ox-lx, ly_dist = oy-ly;
+            float ldist = sqrt(lx_dist*lx_dist + ly_dist*ly_dist);
+            float rx_dist = ox-rx, ry_dist = oy-ry;
+            float rdist = sqrt(rx_dist*rx_dist + ry_dist*ry_dist);
+
+            // 각 l, r만큼 움직였을 때, 변화하는 각도값 dtheta를 계산한다.
+            float dtheta;
+            if( absl > absr ) { 
+                dtheta = moveL / (ldist);
+            } else {
+                dtheta = moveR / (rdist);
+            }
+
+            if( l > 0 ) {
+                dtheta = -dtheta;
+            }
+
+            // 기존 각도에 해당 값을 더해준다.
+            theta += dtheta;
+
+            // 다음 좌표 lx, ly, rx, ry를 원점 ox, oy로부터 xdist만큼 떨어져있는 theta 각도에 표기한다.
+            //if( l < r ) {
+                lx = ox + ldist * cosf(M_PI + theta);
+                ly = oy + ldist * sinf(M_PI + theta);
+                rx = ox + rdist * cosf(theta);
+                ry = oy + rdist * sinf(theta);
+            //} else {
+                //lx = ox + ldist * cosf(M_PI + theta);
+                //ly = oy + ldist * sinf(M_PI + theta);
+                //rx = ox + rdist * cosf(theta);
+                //ry = oy + rdist * sinf(theta);
+            //}
+
+            cout << lx << " " << ly << "       " << rx << " " << ry << endl;
             continue;
         }
 
