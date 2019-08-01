@@ -17,6 +17,8 @@ int main() {
     float ry = 0.f;
 
     float theta = 0.f; // 로봇이 바라보고 있는 각도
+    cout << "시작 좌표" << endl;
+    cout << lx << " " << ly << "       " << rx << " " << ry << endl;
 
     while( true ) {
         cout << "왼쪽, 오른쪽 바퀴의 Encoder 값 입력( two int )" << endl;
@@ -61,7 +63,7 @@ int main() {
         theta += dtheta;
 
         // 다음 좌표 lx, ly, rx, ry를 원점 ox, oy로부터 xdist만큼 떨어져있는 theta 각도에 표기한다.
-        if( moveL < moveR ) {
+        if( fabsf(moveL) < fabsf(moveR) ) {
             lx = ox + ldist * cosf(theta);
             ly = oy + ldist * sinf(theta);
             rx = ox + rdist * cosf(theta);
@@ -72,6 +74,7 @@ int main() {
             rx = ox + rdist * cosf(M_PI - theta);
             ry = oy + rdist * sinf(M_PI - theta);
         }
+        cout << lx << " " << ly << "       " << rx << " " << ry << endl;
     }
 
 
