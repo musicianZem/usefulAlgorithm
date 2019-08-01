@@ -7,6 +7,8 @@ algorithm, setting, strategy, etc.
 
 [특정 시간마다 호출되는 내용을 Action으로 정의해본다](https://github.com/musicianZem/usefulAlgorithm/tree/master/Action_List)
 
+[바퀴가 2개인 로봇에 대해 인코더 값으로 현 위치를 추정해본다](https://github.com/musicianZem/usefulAlgorithm/tree/master/Differential_Drive_2_Wheel_Encoder)
+
 [시간 순서로 동작이 정의되는 내용을 if-else가 아닌 방법으로 정의해본다](https://github.com/musicianZem/usefulAlgorithm/tree/master/Escape_else_if_programming)
 
 [math.h의 sin을 빠르게 정의해본다(테스트 불충분함)](https://github.com/musicianZem/usefulAlgorithm/tree/master/Fast_Sin_Function)
