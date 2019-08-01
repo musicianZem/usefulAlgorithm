@@ -61,7 +61,6 @@ int Cell::goalJ = 0;
 
 void astar() {
     aStarPath.clear();
-    memset(mapState, 0, sizeof(mapState));
     int fromI = curPosition.first ;
     int fromJ = curPosition.second;
     int goalI = destination.first ;
@@ -146,8 +145,12 @@ void astar() {
 }
 
 int main() {
+    memset(mapState, 0, sizeof(mapState));
     curPosition.first =  1;
     curPosition.second=  1;
+    for(int i=0; i<50; i++) {
+        mapState[5][i] = OBSTACLE;
+    }
     destination.first = 10;
     destination.second= 10;
     astar();
