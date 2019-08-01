@@ -3,6 +3,9 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <set>
+#include <queue>
+#include <cstring>
 
 enum {
     EMPTY    = 0,
@@ -57,7 +60,8 @@ int Cell::goalI = 0;
 int Cell::goalJ = 0;
 
 void astar() {
-    if( !aStarPath.empty() ) return;
+    aStarPath.clear();
+    memset(mapState, 0, sizeof(mapState));
     int fromI = curPosition.first ;
     int fromJ = curPosition.second;
     int goalI = destination.first ;
@@ -68,10 +72,9 @@ void astar() {
 
     Cell::setGoalIdx(goalI, goalJ);
 
-    const int nextPosition[8][3] = {
-        {-1, -1, 14}, {-1,  1, 14}, { 1, -1, 14}, { 1,  1, 14}, // unused
-        {-1,  0, 10}, { 1,  0, 10}, { 0, -1, 10}, { 0,  1, 10}  // used
-    };
+    const int nextPosition[4][3] = { 
+        {-1,  0, 1}, { 1,  0, 1}, { 0, -1, 1}, { 0,  1, 1}  // used
+    };  
 
     std::set<Cell, SetComparer> closedSet; // already used set
     std::priority_queue<Cell> openQueue;      // best first
@@ -95,11 +98,11 @@ void astar() {
         }
 
         // left, right, up, down check
-        for(int pos=4; pos<8; pos++) {
+        for(int pos=0; pos<4; pos++) {
             int i = beforeCell.i + nextPosition[pos][0];
             int j = beforeCell.j + nextPosition[pos][1];
 
-            if( i>=0&&j>=0&&i<HEIGHT&&j<WIDTH ) {
+            if( i>=0&&j>=0&&i<HEIGHT&&j<WIDTH ) { 
                 if( mapState[i][j] == OBSTACLE ) continue;
 
                 // set nextCell values | parent : beforeCell
@@ -121,47 +124,31 @@ void astar() {
                     openQueue.push(nextCell); 
                 }
             }
-        } 
-    }
+        }
+    }   
 
     // make path
     auto iter = closedSet.find(Cell(goalI, goalJ));
 
     if(iter != closedSet.end()) {
         int traceI = goalI, traceJ = goalJ;
-        while( traceI != fromI || traceJ != fromJ ) {
+        while( traceI != fromI || traceJ != fromJ ) { 
             aStarPath.push_back( std::make_pair(traceI, traceJ) );
             auto toFindParent = closedSet.find(Cell(traceI, traceJ));
             traceI = toFindParent->pi; traceJ = toFindParent->pj;
         }
         aStarPath.push_back( std::make_pair(fromI, fromJ) );
-    } 
+    }   
 
     for(std::vector<std::pair<int, int>>::reverse_iterator rit = aStarPath.rbegin(); rit != aStarPath.rend(); rit++) {
         std::cout << rit->first << " " << rit->second << "\n";
-    }
+    }   
 }
 
 int main() {
-    /*
-     *  -- Map Example --
-     * |  0  0  0  0  0  |
-     * |  0  S  1  0  0  |
-     * |  0  1  1  1  0  |
-     * |  0  0  1  E  0  |
-     * |  0  0  0  0  0  |
-     *  -----------------
-     */
-    curPosition.first = 1;
-    curPosition.second= 1;
-    destination.first = 3;
-    destination.second= 3;
-    mapState[1][2] = mapState[3][2] = OBSTACLE;
-    mapState[2][1] = mapState[2][2] = OBSTACLE;
-    mapState[2][2]                  = OBSTACLE;
-
+    curPosition.first =  1;
+    curPosition.second=  1;
+    destination.first = 10;
+    destination.second= 10;
     astar();
-    std::cout << aStarPath.size() << std::endl;
 }
-
-
