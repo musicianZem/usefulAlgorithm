@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <cstdio>
 #include <cmath>
 
@@ -7,14 +8,14 @@ using namespace std;
 // 고정 값
 const float ROBOT_WHEEL_DISTANCE = 0.1320f; // 양 바퀴 사이 거리(m)
 const float ROBOT_WHEEL_RADIUS   = 0.0628f; // 바퀴 반지름
-const float ENCODER_PER_1_CYCLE  = 6000.f;  // 바퀴가 한 바퀴 돌 때, 증가하는 Encoder 값
+const float ENCODER_PER_1_CYCLE  = 900.f;  // 바퀴가 한 바퀴 돌 때, 증가하는 Encoder 값
 const float ROBOT_MOVE_PER_TICK  = 2 * M_PI * ROBOT_WHEEL_RADIUS / ENCODER_PER_1_CYCLE; // 바퀴 인코더 값 1당 움직이는 거리
 
 // 로봇 시작 위치
-float lx = 0.f - (ROBOT_WHEEL_DISTANCE/2.f);
-float ly = 0.f;
-float rx = 0.f + (ROBOT_WHEEL_DISTANCE/2.f);
-float ry = 0.f;
+float lx = 15.f - (ROBOT_WHEEL_DISTANCE/2.f);
+float ly = 15.f;
+float rx = 15.f + (ROBOT_WHEEL_DISTANCE/2.f);
+float ry = 15.f;
 float theta = 0.f; // 로봇이 바라보고 있는 각도
 
 
@@ -22,6 +23,7 @@ void getNextPointSameWheelSpeed(int enc) {
     // 실제 움직인 호의 길이 계산
     float moveDist = enc * ROBOT_MOVE_PER_TICK; // lenc or renc
 
+    cout << "dtheta = " << 0 << endl;
     // 다음 좌표 계산
     lx += moveDist * cosf(theta + (M_PI/2.f));
     ly += moveDist * sinf(theta + (M_PI/2.f));
@@ -56,8 +58,10 @@ void getNextPointDiffSign(int lenc, int renc) {
         dtheta = moveR / (rdist);
     }
 
-    if( lenc > 0 ) {
-        dtheta = -dtheta;
+    if( lenc > renc ) {
+        dtheta = -fabsf(dtheta);
+    } else {
+        dtheta = fabsf(dtheta);
     }
 
     // 기존 각도에 해당 값을 더해준다.
@@ -94,6 +98,14 @@ void getNextPointSameSign(int lenc, int renc) {
         dtheta = moveR / (rdist);
     }
 
+    //if( lenc > renc ) dtheta = -dtheta;
+    cout << "dtheta = " << dtheta << endl;
+
+    if( lenc > renc ) {
+        dtheta = -fabsf(dtheta);
+    } else {
+        dtheta = fabsf(dtheta);
+    }
     // 기존 각도에 해당 값을 더해준다.
     theta += dtheta;
 
@@ -104,20 +116,21 @@ void getNextPointSameSign(int lenc, int renc) {
         rx = ox + rdist * cosf(theta);
         ry = oy + rdist * sinf(theta);
     } else {
-        lx = ox + ldist * cosf(M_PI - theta);
-        ly = oy + ldist * sinf(M_PI - theta);
-        rx = ox + rdist * cosf(M_PI - theta);
-        ry = oy + rdist * sinf(M_PI - theta);
+        lx = ox + ldist * cosf(M_PI + theta);
+        ly = oy + ldist * sinf(M_PI + theta);
+        rx = ox + rdist * cosf(M_PI + theta);
+        ry = oy + rdist * sinf(M_PI + theta);
     }
 }
 
 int main() {
 
-    cout << "시작 좌표" << endl;
-    cout << lx << " " << ly << "       " << rx << " " << ry << endl;
+    cout << "                 시작 좌표" << endl;
+    cout << "                 " << lx << " " << ly << "        " << rx << " " << ry << endl;
 
+    int l, r;
     while( true ) {
-        int l, r; cin >> l >> r;
+        cin >> l >> r;
 
         // 두 바퀴의 인코더 값이 같은 경우
         if( l == r ) {
@@ -132,6 +145,6 @@ int main() {
             getNextPointSameSign(l, r);
         }
 
-        cout << lx << " " << ly << "       " << rx << " " << ry << endl;
+        cout << "L["<<l<<"] R["<<r<<"] \t " << lx << " " << ly << "       " << rx << " " << ry << "  " << theta << endl << endl;
     }
 }
