@@ -1,5 +1,16 @@
 # usefulAlgorithm
 
+# 소스 흐름 분석 확인
+
+<details>
+<summary> github README 접기 펼치기 방법 </summary>
+<div markdown="1">
+
+**H**e**l**l**o** w**o**r**l**d**!**!
+
+</div>
+</details>
+
 Describe some things that was useful.  
 algorithm, setting, strategy, etc.  
 
