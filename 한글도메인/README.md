@@ -30,7 +30,7 @@ module.exports = router;
 
 ```node.js
 
-app.use(`/${encodeURI("한글도메인")`, koreanRouter);
+app.use(`/${encodeURI("한글도메인")}`, koreanRouter);
 
 ```
 
